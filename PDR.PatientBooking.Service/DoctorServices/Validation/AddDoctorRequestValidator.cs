@@ -9,10 +9,12 @@ namespace PDR.PatientBooking.Service.DoctorServices.Validation
     public class AddDoctorRequestValidator : IAddDoctorRequestValidator
     {
         private readonly PatientBookingContext _context;
+        private IEmailValidator _emailValidator;
 
-        public AddDoctorRequestValidator(PatientBookingContext context)
+        public AddDoctorRequestValidator(PatientBookingContext context, IEmailValidator emailValidator)
         {
             _context = context;
+            _emailValidator = emailValidator;
         }
 
         public PdrValidationResult ValidateRequest(AddDoctorRequest request)
@@ -23,6 +25,9 @@ namespace PDR.PatientBooking.Service.DoctorServices.Validation
                 return result;
 
             if (DoctorAlreadyInDb(request, ref result))
+                return result;
+
+            if (EmailInvalid(request, ref result))
                 return result;
 
             return result;
@@ -57,6 +62,18 @@ namespace PDR.PatientBooking.Service.DoctorServices.Validation
             {
                 result.PassedValidation = false;
                 result.Errors.Add("A doctor with that email address already exists");
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool EmailInvalid(AddDoctorRequest request, ref PdrValidationResult result)
+        {
+            if (!_emailValidator.IsEmailValid(request.Email))
+            {
+                result.PassedValidation = false;
+                result.Errors.Add("Email must be a valid email address");
                 return true;
             }
 
