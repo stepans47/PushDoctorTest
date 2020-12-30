@@ -47,7 +47,7 @@ namespace PDR.PatientBookingApi.Controllers
             }
         }
 
-        [HttpPut()]
+        [HttpPut("cancel-booking")]
         public IActionResult CancelBooking(CancelBookingRequest request)
         {
             try

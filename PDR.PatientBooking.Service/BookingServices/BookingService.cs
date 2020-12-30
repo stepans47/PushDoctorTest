@@ -53,16 +53,24 @@ namespace PDR.PatientBooking.Service.BookingServices
                 .Order
                 .Select(o => new GetPatientNextAppointmentResponse
                 {
-                    Id = o.Id,
+                    OrderId = o.Id,
+                    OrderStatus = o.OrderStatus,
                     StartTime = o.StartTime,
                     EndTime = o.EndTime,
                     PatientId = o.PatientId,
                     DoctorId = o.DoctorId,
+                    Doctor = new Responses.Doctor
+                    { 
+                        FirstName = o.Doctor.FirstName,
+                        LastName = o.Doctor.LastName
+                    },
                     SurgeryType = o.SurgeryType
-
                 })
                 .OrderByDescending(o => o.StartTime)
-                .Where(o => o.PatientId == patientId && o.StartTime > DateTime.UtcNow)
+                .Where(o => 
+                    o.PatientId == patientId && 
+                    o.StartTime > DateTime.UtcNow &&
+                    o.OrderStatus == OrderStatus.Active)
                 .AsNoTracking()
                 .ToList();
 
@@ -82,6 +90,11 @@ namespace PDR.PatientBooking.Service.BookingServices
                 o.Id == request.OrderId &&
                 o.PatientId == request.PatientId)
                 .FirstOrDefault();
+
+            if (orderForCancellation == null)
+            {
+                throw new NullReferenceException("No order was found for cancellation");
+            }
 
             orderForCancellation.OrderStatus = OrderStatus.Canceled;
             _context.SaveChanges();
