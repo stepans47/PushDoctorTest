@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PDR.PatientBooking.Data.Enums;
+using System;
 
 namespace PDR.PatientBooking.Data.Models
 {
@@ -12,5 +13,6 @@ namespace PDR.PatientBooking.Data.Models
         public virtual long DoctorId { get; set; }
         public virtual Patient Patient { get; set; }
         public virtual Doctor Doctor { get; set; }
+        public OrderStatus OrderStatus { get; set; }
     }
 }
