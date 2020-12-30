@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PDR.PatientBooking.Data;
+using PDR.PatientBooking.Data.Enums;
 using PDR.PatientBooking.Data.Models;
 using PDR.PatientBooking.Service.BookingServices.Requests;
 using PDR.PatientBooking.Service.BookingServices.Responses;
@@ -12,17 +13,21 @@ namespace PDR.PatientBooking.Service.BookingServices
     public class BookingService : IBookingService
     {
         private readonly PatientBookingContext _context;
-        private readonly IAddBookingRequestValidator _validator;
+        private readonly IAddBookingRequestValidator _bookingValidator;
+        private readonly ICancelBookingRequestValidator _cancellationValidator;
 
-        public BookingService(PatientBookingContext context, IAddBookingRequestValidator validator)
+        public BookingService(PatientBookingContext context, 
+            IAddBookingRequestValidator bookingValidator,
+            ICancelBookingRequestValidator cancellationValidator)
         {
             _context = context;
-            _validator = validator;
+            _bookingValidator = bookingValidator;
+            _cancellationValidator = cancellationValidator;
         }
 
         public void AddBooking(AddBookingRequest request)
         {
-            var validationResult = _validator.ValidateRequest(request);
+            var validationResult = _bookingValidator.ValidateRequest(request);
 
             if (!validationResult.PassedValidation)
             {
@@ -62,6 +67,24 @@ namespace PDR.PatientBooking.Service.BookingServices
                 .ToList();
 
             return orders.FirstOrDefault();
+        }
+
+        public void CancelBooking(CancelBookingRequest request)
+        {
+            var validationResult = _cancellationValidator.ValidateRequest(request);
+
+            if (!validationResult.PassedValidation)
+            {
+                throw new ArgumentException(validationResult.Errors.First());
+            }
+
+            var orderForCancellation = _context.Order.Where(o =>
+                o.Id == request.OrderId &&
+                o.PatientId == request.PatientId)
+                .FirstOrDefault();
+
+            orderForCancellation.OrderStatus = OrderStatus.Canceled;
+            _context.SaveChanges();
         }
     }
 }
