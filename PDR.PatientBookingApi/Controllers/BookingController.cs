@@ -5,6 +5,7 @@ using System;
 
 namespace PDR.PatientBookingApi.Controllers
 {
+    /* It's better to use async methods for our controllers, services, etc. */
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase

@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace PDR.PatientBooking.Service.BookingServices
 {
+    /* Has to be covered with tests as well */
     public class BookingService : IBookingService
     {
         private readonly PatientBookingContext _context;

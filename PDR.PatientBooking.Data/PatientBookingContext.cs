@@ -3,6 +3,7 @@ using PDR.PatientBooking.Data.Models;
 
 namespace PDR.PatientBooking.Data
 {
+    /* It's better to encapsulate Context using Repository pattern and not expose it to any other layers */
     public class PatientBookingContext : DbContext
     {
         public PatientBookingContext(DbContextOptions options) : base(options)
