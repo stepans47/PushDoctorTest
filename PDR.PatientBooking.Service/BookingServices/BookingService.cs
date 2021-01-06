@@ -89,7 +89,7 @@ namespace PDR.PatientBooking.Service.BookingServices
             var orderForCancellation = _context.Order.Where(o =>
                 o.Id == request.OrderId &&
                 o.PatientId == request.PatientId)
-                .FirstOrDefault();
+                .SingleOrDefault();
 
             if (orderForCancellation == null)
             {

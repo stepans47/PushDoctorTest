@@ -69,11 +69,11 @@ namespace PDR.PatientBooking.Service.BookingServices.Validation
 
         private bool DoctorIsBusy(AddBookingRequest request, ref PdrValidationResult result)
         {
-            var alreadyBookedVisits = _context.Order.Where(o => 
+            var alreadyBookedVisits = _context.Order.Any(o => 
                 o.DoctorId == request.DoctorId && 
                (o.StartTime >= request.StartTime && o.EndTime <= request.EndTime));
 
-            if (alreadyBookedVisits != null && alreadyBookedVisits.Count() > 0)
+            if (alreadyBookedVisits)
             {
                 result.PassedValidation = false;
                 result.Errors.Add("Doctor is already busy");
