@@ -46,5 +46,23 @@ namespace PDR.PatientBookingApi.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [HttpPut("cancel-booking")]
+        public IActionResult CancelBooking(CancelBookingRequest request)
+        {
+            try
+            {
+                _bookingService.CancelBooking(request);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

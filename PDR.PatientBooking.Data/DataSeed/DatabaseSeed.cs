@@ -1,4 +1,5 @@
-﻿using PDR.PatientBooking.Data.Models;
+﻿using PDR.PatientBooking.Data.Enums;
+using PDR.PatientBooking.Data.Models;
 using System;
 using System.Collections.Generic;
 

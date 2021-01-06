@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PDR.PatientBooking.Data.Enums;
+using System.Collections.Generic;
 
 namespace PDR.PatientBooking.Data.Models
 {
@@ -8,11 +9,5 @@ namespace PDR.PatientBooking.Data.Models
         public string Name { get; set; }
         public SurgeryType SurgeryType { get; set; }
         public virtual ICollection<Patient> Patients { get; set; }
-    }
-
-    public enum SurgeryType
-    {
-        SystemOne,
-        SystemTwo
     }
 }
