@@ -9,10 +9,12 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
     public class AddPatientRequestValidator : IAddPatientRequestValidator
     {
         private readonly PatientBookingContext _context;
+        private IEmailValidator _emailValidator;
 
-        public AddPatientRequestValidator(PatientBookingContext context)
+        public AddPatientRequestValidator(PatientBookingContext context, IEmailValidator emailValidator)
         {
             _context = context;
+            _emailValidator = emailValidator;
         }
 
         public PdrValidationResult ValidateRequest(AddPatientRequest request)
@@ -26,6 +28,9 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
                 return result;
 
             if (ClinicNotFound(request, ref result))
+                return result;
+
+            if (EmailInvalid(request, ref result))
                 return result;
 
             return result;
@@ -72,6 +77,18 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
             {
                 result.PassedValidation = false;
                 result.Errors.Add("A clinic with that ID could not be found");
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool EmailInvalid(AddPatientRequest request, ref PdrValidationResult result)
+        {
+            if (!_emailValidator.IsEmailValid(request.Email))
+            {
+                result.PassedValidation = false;
+                result.Errors.Add("Email must be a valid email address");
                 return true;
             }
 

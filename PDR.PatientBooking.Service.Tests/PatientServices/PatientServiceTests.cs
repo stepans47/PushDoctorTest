@@ -101,15 +101,17 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
                 Email = request.Email,
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
-                ClinicId = request.ClinicId,
-                Created = DateTime.UtcNow
+                ClinicId = request.ClinicId
             };
 
             //act
             _patientService.AddPatient(request);
 
             //assert
-            _context.Patient.Should().ContainEquivalentOf(expected, options => options.Excluding(patient => patient.Id));
+            _context.Patient.Should().ContainEquivalentOf(
+                expected,
+                options => options.Excluding(patient => patient.Id)
+                                  .Excluding(patient => patient.Created));
         }
 
         [Test]
