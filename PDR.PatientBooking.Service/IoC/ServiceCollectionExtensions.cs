@@ -5,6 +5,7 @@ using PDR.PatientBooking.Service.ClinicServices;
 using PDR.PatientBooking.Service.ClinicServices.Validation;
 using PDR.PatientBooking.Service.DoctorServices;
 using PDR.PatientBooking.Service.DoctorServices.Validation;
+using PDR.PatientBooking.Service.Helpers;
 using PDR.PatientBooking.Service.PatientServices;
 using PDR.PatientBooking.Service.PatientServices.Validation;
 using PDR.PatientBooking.Service.Validation;
@@ -29,6 +30,9 @@ namespace PDR.PatientBooking.Service.IoC
             collection.AddScoped<ICancelBookingRequestValidator, CancelBookingRequestValidator>();
 
             collection.AddScoped<IEmailValidator, EmailValidator>();
+
+            collection.AddScoped<IDateTimeHelper, DateTimeHelper>();
+            collection.AddScoped<IGuidHelper, GuidHelper>();
         }
     }
 }
