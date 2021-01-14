@@ -1,5 +1,6 @@
 ﻿using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Service.BookingServices.Requests;
+using PDR.PatientBooking.Service.Helpers;
 using PDR.PatientBooking.Service.Validation;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,12 @@ namespace PDR.PatientBooking.Service.BookingServices.Validation
     public class AddBookingRequestValidator : IAddBookingRequestValidator
     {
         private readonly PatientBookingContext _context;
+        private readonly IDateTimeHelper _dateTimeHelper;
 
-        public AddBookingRequestValidator(PatientBookingContext context)
+        public AddBookingRequestValidator(PatientBookingContext context, IDateTimeHelper dateTimeHelper)
         {
             _context = context;
+            _dateTimeHelper = dateTimeHelper;
         }
 
         public PdrValidationResult ValidateRequest(AddBookingRequest request)
@@ -36,13 +39,13 @@ namespace PDR.PatientBooking.Service.BookingServices.Validation
         {
             var errors = new List<string>();
 
-            if (request.StartTime == null || request.EndTime == null)
+            if (request.StartTime == default(DateTime) || request.EndTime == default(DateTime))
                 errors.Add("Booking date is not specified");
 
-            if (request.DoctorId == 0)
+            if (request.DoctorId <= 0)
                 errors.Add("Doctor is not specified");
 
-            if (request.PatientId == 0)
+            if (request.PatientId <= 0)
                 errors.Add("Patient is not specified");
 
             if (errors.Any())
@@ -57,7 +60,7 @@ namespace PDR.PatientBooking.Service.BookingServices.Validation
 
         public bool BookingDateInvalid(AddBookingRequest request, ref PdrValidationResult result)
         {
-            if (request.StartTime <= DateTime.UtcNow)
+            if (request.StartTime <= _dateTimeHelper.GetCurrentDateTime())
             {
                 result.PassedValidation = false;
                 result.Errors.Add("Booking date cannot be set in the past");
@@ -71,7 +74,7 @@ namespace PDR.PatientBooking.Service.BookingServices.Validation
         {
             var alreadyBookedVisits = _context.Order.Any(o => 
                 o.DoctorId == request.DoctorId && 
-               (o.StartTime >= request.StartTime && o.EndTime <= request.EndTime));
+               (request.StartTime >= o.StartTime && request.StartTime <= o.EndTime));
 
             if (alreadyBookedVisits)
             {

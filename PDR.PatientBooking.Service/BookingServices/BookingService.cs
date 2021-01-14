@@ -5,6 +5,7 @@ using PDR.PatientBooking.Data.Models;
 using PDR.PatientBooking.Service.BookingServices.Requests;
 using PDR.PatientBooking.Service.BookingServices.Responses;
 using PDR.PatientBooking.Service.BookingServices.Validation;
+using PDR.PatientBooking.Service.Helpers;
 using System;
 using System.Linq;
 
@@ -14,16 +15,26 @@ namespace PDR.PatientBooking.Service.BookingServices
     public class BookingService : IBookingService
     {
         private readonly PatientBookingContext _context;
+
         private readonly IAddBookingRequestValidator _bookingValidator;
         private readonly ICancelBookingRequestValidator _cancellationValidator;
 
+        private readonly IDateTimeHelper _dateTimeHelper;
+        private readonly IGuidHelper _guidHelper;
+
         public BookingService(PatientBookingContext context, 
             IAddBookingRequestValidator bookingValidator,
-            ICancelBookingRequestValidator cancellationValidator)
+            ICancelBookingRequestValidator cancellationValidator,
+            IDateTimeHelper dateTimeHelper,
+            IGuidHelper guidHelper)
         {
             _context = context;
+
             _bookingValidator = bookingValidator;
             _cancellationValidator = cancellationValidator;
+
+            _dateTimeHelper = dateTimeHelper;
+            _guidHelper = guidHelper;
         }
 
         public void AddBooking(AddBookingRequest request)
@@ -37,7 +48,7 @@ namespace PDR.PatientBooking.Service.BookingServices
 
             _context.Order.Add(new Order
             {
-                Id = new Guid(),
+                Id = _guidHelper.GetNewGuid(),
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 PatientId = request.PatientId,
@@ -70,7 +81,7 @@ namespace PDR.PatientBooking.Service.BookingServices
                 .OrderByDescending(o => o.StartTime)
                 .Where(o => 
                     o.PatientId == patientId && 
-                    o.StartTime > DateTime.UtcNow &&
+                    o.StartTime > _dateTimeHelper.GetCurrentDateTime() &&
                     o.OrderStatus == OrderStatus.Active)
                 .AsNoTracking()
                 .ToList();
