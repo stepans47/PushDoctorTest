@@ -6,6 +6,11 @@ namespace PDR.PatientBooking.Service.Validation
     {
         public EmailValidator() { }
 
+        public bool IsEmailNullOrEmpty(string email)
+        {
+            return string.IsNullOrEmpty(email);
+        }
+
         public bool IsEmailValid(string email)
         {
             string emailPattern = @"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*" +
