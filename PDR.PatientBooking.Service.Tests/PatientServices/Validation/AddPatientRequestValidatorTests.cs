@@ -16,6 +16,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
     public class AddPatientRequestValidatorTests
     {
         private IFixture _fixture;
+        private MockRepository _mockRepository;
 
         private PatientBookingContext _context;
         private Mock<IEmailValidator> _emailValidator;
@@ -27,16 +28,15 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         {
             // Boilerplate
             _fixture = new Fixture();
+            _mockRepository = new MockRepository(MockBehavior.Strict);
 
             //Prevent fixture from generating from entity circular references 
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior(1));
 
             // Mock setup
-            _context = new PatientBookingContext(new DbContextOptionsBuilder<PatientBookingContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
-
-            /*_emailValidator has to be mocked and actual email verification test logic should be moved from AddPatientRequestValidatorTests
-             to another corresponding unit test class*/
-            var emailValidatorMock = new EmailValidator();
+            _context = new PatientBookingContext(new DbContextOptionsBuilder<PatientBookingContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+            _emailValidator = _mockRepository.Create<IEmailValidator>();
 
             // Mock default
             SetupMockDefaults();
@@ -44,13 +44,14 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             // Sut instantiation
             _addPatientRequestValidator = new AddPatientRequestValidator(
                 _context,
-                emailValidatorMock
+                _emailValidator.Object
             );
         }
 
         private void SetupMockDefaults()
         {
-
+            _emailValidator.Setup(x => x.IsEmailNullOrEmpty(It.IsAny<string>())).Returns(false);
+            _emailValidator.Setup(x => x.IsEmailValid(It.IsAny<string>())).Returns(true);
         }
 
         [Test]
@@ -98,13 +99,12 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             res.Errors.Should().Contain("LastName must be populated");
         }
 
-        [TestCase("")]
-        [TestCase(null)]
-        public void ValidateRequest_EmailNullOrEmpty_ReturnsFailedValidationResult(string email)
+        [Test]
+        public void ValidateRequest_EmailNullOrEmpty_ReturnsFailedValidationResult()
         {
             //arrange
             var request = GetValidRequest();
-            request.Email = email;
+            _emailValidator.Setup(x => x.IsEmailNullOrEmpty(It.IsAny<string>())).Returns(true);
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -114,14 +114,13 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             res.Errors.Should().Contain("Email must be populated");
         }
 
-        [TestCase("user@")]
-        [TestCase("@")]
-        [TestCase("user")]
-        public void ValidateRequest_InvalidEmail_ReturnsFailedValidationResult(string email)
+        [Test]
+        public void ValidateRequest_InvalidEmail_ReturnsFailedValidationResult()
         {
             //arrange
             var request = GetValidRequest();
-            request.Email = email;
+            _emailValidator.Setup(x => x.IsEmailNullOrEmpty(It.IsAny<string>())).Returns(false);
+            _emailValidator.Setup(x => x.IsEmailValid(It.IsAny<string>())).Returns(false);
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -131,26 +130,13 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             res.Errors.Should().Contain("Email must be a valid email address");
         }
 
-        [TestCase("user@domain.com")]
-        [TestCase("user@domain-domain.com")]
-        [TestCase("user@domain.net")]
-        [TestCase("user@1.net")]
-        [TestCase("user@domain.co.uk")]
-        [TestCase("user.name@domain.com")]
-        [TestCase("user.name@domain-domain.com")]
-        [TestCase("user.name@domain.net")]
-        [TestCase("user.name@1.net")]
-        [TestCase("user.name@domain.co.uk")]
-        [TestCase("user+100@domain.com")]
-        [TestCase("user+100@domain-domain.com")]
-        [TestCase("user+100@domain.net")]
-        [TestCase("user+100@1.net")]
-        [TestCase("user+100@domain.co.uk")]
-        public void ValidateRequest_ValidEmail_ReturnsPassedValidationResult(string email)
+        [Test]
+        public void ValidateRequest_ValidEmail_ReturnsPassedValidationResult()
         {
             //arrange
             var request = GetValidRequest();
-            request.Email = email;
+            _emailValidator.Setup(x => x.IsEmailNullOrEmpty(It.IsAny<string>())).Returns(false);
+            _emailValidator.Setup(x => x.IsEmailValid(It.IsAny<string>())).Returns(true);
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);

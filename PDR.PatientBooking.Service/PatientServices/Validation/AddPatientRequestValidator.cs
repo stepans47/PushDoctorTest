@@ -85,10 +85,18 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
 
         private bool EmailInvalid(AddPatientRequest request, ref PdrValidationResult result)
         {
+            var errors = new List<string>();
+
+            if (_emailValidator.IsEmailNullOrEmpty(request.Email))
+                errors.Add("Email must be populated");
+
             if (!_emailValidator.IsEmailValid(request.Email))
+                errors.Add("Email must be a valid email address");
+
+            if (errors.Any())
             {
                 result.PassedValidation = false;
-                result.Errors.Add("Email must be a valid email address");
+                result.Errors.AddRange(errors);
                 return true;
             }
 
